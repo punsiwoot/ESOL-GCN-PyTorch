@@ -23,7 +23,7 @@ class EarlyStopping:
         else : 
             print('something wrong')
 
-def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs:int=1000, is_early_stop:bool = False, show_result_at:int = 0, save_path:str=None, save_every:int=None, best_valid_loss:float=None, continue_epoch:int = 0, is_auto_save:bool = False):
+def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs:int=1000, is_early_stop:bool = False, show_result_at:int = 0, save_path:str=None, save_every:int=None, best_valid_loss:float=None, continue_epoch:int = 0, is_auto_save:bool = False, model_name:str="model"):
     earlystop = EarlyStopping(tolerance=7,min_delta=1)
     train_losses_epoch = []
     valid_losses_epoch = []
@@ -69,13 +69,13 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
         average_valid_loss = sum(valid_losses)/len(valid_losses)
         train_losses_epoch.append(average_train_loss)
         valid_losses_epoch.append(average_valid_loss)
-        if ((epoch)%save_every == 0)and(save_every!=None):torch.save(model.state_dict(), save_path+"_e"+str(epoch))+".pth"
+        if ((epoch)%save_every == 0)and(save_every!=None):torch.save(model.state_dict(), save_path+str(model_name)+"_e"+str(epoch))+".pth"
         if (show_result_at != 0) and ((epoch)%show_result_at == 0 ): print(f"at epoch : {epoch} train_loss = {average_train_loss}  valid_loss = {average_valid_loss}")
         if (is_early_stop):earlystop(train_loss=average_train_loss, validation_loss=average_valid_loss)
         if ((epoch==1)and(best_valid_loss==None))or((best_valid_loss!=None)and(average_valid_loss<best_valid_loss)) and is_auto_save: 
             # print("save_best_state_activate")
             best_valid_loss = average_valid_loss
-            torch.save(model.state_dict(), save_path+"_best"+".pth")
+            torch.save(model.state_dict(), save_path+str(model_name)+"_best"+".pth")
         if earlystop.early_stop and is_early_stop:
             stop_at_epoch = epoch
             print(f'result at {epoch} is {earlystop.early_stop}')
