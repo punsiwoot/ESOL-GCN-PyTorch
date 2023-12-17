@@ -27,6 +27,7 @@ class GCN_BASE_model_tanh(torch.nn.Module):
         self.initial_conv = GCNConv(data_num_features, embedding_size)
         self.conv1 = GCNConv(embedding_size, embedding_size)
         self.conv2 = GCNConv(embedding_size, embedding_size)
+        self.tanh = Tanh()
     
         # define linear layer
         self.out = Linear(embedding_size*2, 1)
@@ -50,13 +51,15 @@ class GCN_BASE_model_tanh(torch.nn.Module):
         
         # first layer
         hidden = self.initial_conv(x, edge_index)
-        hidden = Tanh(hidden)
+        # print(hidden.shape)
+        hidden = self.tanh(hidden)
+        # print('passhere')
         # second layer
         hidden = self.conv1(hidden, edge_index)
-        hidden = Tanh(hidden)
+        hidden = self.tanh(hidden)
         # third layer
         hidden = self.conv2(hidden, edge_index)
-        hidden = Tanh(hidden)
+        hidden = self.tanh(hidden)
 
         # global pooling
         hidden = torch.cat([gmp(hidden, batch_index),

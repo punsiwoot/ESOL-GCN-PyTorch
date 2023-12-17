@@ -27,6 +27,7 @@ class GCN_BASE_model_tanh_pyra(torch.nn.Module):
         self.initial_conv = GCNConv(data_num_features, embedding_size)
         self.conv1 = GCNConv(embedding_size, int(embedding_size/2))
         self.conv2 = GCNConv(int(embedding_size/2), int(embedding_size/4))
+        self.tanh = Tanh()
     
         # define linear layer
         self.out = Linear(int(embedding_size/4)*2, 1)
@@ -50,13 +51,13 @@ class GCN_BASE_model_tanh_pyra(torch.nn.Module):
         
         # first layer
         hidden = self.initial_conv(x, edge_index)
-        hidden = Tanh(hidden)
+        hidden = self.tanh(hidden)
         # second layer
         hidden = self.conv1(hidden, edge_index)
-        hidden = Tanh(hidden)
+        hidden = self.tanh(hidden)
         # third layer
         hidden = self.conv2(hidden, edge_index)
-        hidden = Tanh(hidden)
+        hidden = self.tanh(hidden)
 
         # global pooling
         hidden = torch.cat([gmp(hidden, batch_index),
