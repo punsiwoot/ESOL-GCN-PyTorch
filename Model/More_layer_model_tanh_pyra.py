@@ -24,12 +24,12 @@ class GCN_More_layer_model_tanh_pyra(torch.nn.Module):
 
         # define layer
         self.initial_conv = GCNConv(data_num_features, embedding_size)
-        self.conv1 = GCNConv(embedding_size, embedding_size/2)
-        self.conv2 = GCNConv(embedding_size/2, embedding_size/4)
-        self.conv3 = GCNConv(embedding_size/4, embedding_size/8)
+        self.conv1 = GCNConv(embedding_size, int(embedding_size/2))
+        self.conv2 = GCNConv(int(embedding_size/2), int(embedding_size/4))
+        self.conv3 = GCNConv(int(embedding_size/4), int(embedding_size/8))
     
         # define linear layer
-        self.out = Linear(embedding_size/4, 1)
+        self.out = Linear(int(embedding_size/4), 1)
     
     def init_weights(self):
         # Use Xavier/Glorot initialization for GCNConv layers
