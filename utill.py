@@ -69,7 +69,7 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
         average_valid_loss = sum(valid_losses)/len(valid_losses)
         train_losses_epoch.append(average_train_loss)
         valid_losses_epoch.append(average_valid_loss)
-        if (save_every!=0)and((epoch)%save_every == 0):torch.save(model.state_dict(), save_path+str(model_name)+"_e"+str(epoch))+".pth"
+        if (save_every!=0)and((epoch)%save_every == 0):torch.save(model.state_dict(), save_path+str(model_name)+"_e"+str(epoch)+".pth")
         if (show_result_at != 0) and ((epoch)%show_result_at == 0 ): print(f"at epoch : {epoch} train_loss = {average_train_loss}  valid_loss = {average_valid_loss}")
         if (is_early_stop):earlystop(train_loss=average_train_loss, validation_loss=average_valid_loss)
         if (((epoch==1)and(best_valid_loss==0))or((best_valid_loss!=0)and(average_valid_loss<best_valid_loss))) and is_auto_save: 
