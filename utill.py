@@ -35,6 +35,7 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
         valid_losses = []
         
         #train step
+        model.train()
         for batch in training_set:
             # Use GPU
             batch.to(device)
@@ -52,17 +53,19 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
             optimizer.step()
         
         #valid step
+            
         model.eval()
-        for batch in validation_set:
-            # Use GPU
-            batch.to(device)
-            # Passing the node features and the connection info
-            pred = model(batch.x.float(), batch.edge_index, batch.batch)
-            # Calculating the loss
-            valid_loss = loss_fn(pred, batch.y)
-            if torch.cuda.is_available(): float_valid_loss = float(valid_loss.cpu().detach().numpy().astype(float))
-            else : float_valid_loss = float(valid_loss.detach().numpy().astype(float))
-            valid_losses.append(float_valid_loss)
+        with torch.no_grad():
+            for batch in validation_set:
+                # Use GPU
+                batch.to(device)
+                # Passing the node features and the connection info
+                pred = model(batch.x.float(), batch.edge_index, batch.batch)
+                # Calculating the loss
+                valid_loss = loss_fn(pred, batch.y)
+                if torch.cuda.is_available(): float_valid_loss = float(valid_loss.cpu().detach().numpy().astype(float))
+                else : float_valid_loss = float(valid_loss.detach().numpy().astype(float))
+                valid_losses.append(float_valid_loss)
         
         #calculate average loss
         average_train_loss = sum(train_losses)/len(train_losses)
@@ -74,7 +77,7 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
             torch.save(optimizer.state_dict(), save_path+str(model_name)+"optimizer_e"+str(epoch)+".pth")
         if (show_result_at != 0) and ((epoch)%show_result_at == 0 ): print(f"at epoch : {epoch} train_loss = {average_train_loss}  valid_loss = {average_valid_loss}")
         if (is_early_stop):earlystop(train_loss=average_train_loss, validation_loss=average_valid_loss)
-        if (((epoch==1)and(best_valid_loss==0))or((best_valid_loss!=0)and(average_valid_loss<best_valid_loss))) and is_auto_save: 
+        if ((((epoch-continue_epoch)==1)and(best_valid_loss==0))or((best_valid_loss!=0)and(average_valid_loss<best_valid_loss))) and is_auto_save: 
             # print("save_best_state_activate")
             best_valid_loss = average_valid_loss
             torch.save(model.state_dict(), save_path+str(model_name)+"_best"+".pth")
@@ -86,16 +89,18 @@ def train(model, optimizer, loss_fn,validation_set, training_set, device, epochs
     return train_losses_epoch, valid_losses_epoch, stop_at_epoch
 
 def test(model,loss_fn,test_set,device):
+    model.eval()
     test_loss_list = []
-    for batch in test_set:
-        batch.to(device)
-        # Passing the node features and the connection info
-        pred = model(batch.x.float(), batch.edge_index, batch.batch)
-        # Calculating the loss
-        test_loss = loss_fn(pred, batch.y)
-        if torch.cuda.is_available(): float_test_loss = float(test_loss.cpu().detach().numpy().astype(float))
-        else : float_test_loss = float(test_loss.detach().numpy().astype(float))
-        test_loss_list.append(float_test_loss)
+    with torch.no_grad():
+        for batch in test_set:
+            batch.to(device)
+            # Passing the node features and the connection info
+            pred = model(batch.x.float(), batch.edge_index, batch.batch)
+            # Calculating the loss
+            test_loss = loss_fn(pred, batch.y)
+            if torch.cuda.is_available(): float_test_loss = float(test_loss.cpu().detach().numpy().astype(float))
+            else : float_test_loss = float(test_loss.detach().numpy().astype(float))
+            test_loss_list.append(float_test_loss)
     average_train_loss = sum(test_loss_list)/len(test_loss_list)
     return average_train_loss
 
